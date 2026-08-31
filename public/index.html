@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Inventaris PLN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-pln py-3 mb-4">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <img src="Logo_PLN.png" alt="Logo PLN" class="navbar-logo">
+                Sistem Inventaris PLN
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation" title="Buka Menu Navigasi">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    <li class="nav-item"><a class="nav-link active fw-bold text-primary" href="index.html">Dashboard Admin</a></li>
+                    <li class="nav-item"><a class="nav-link" href="scanner.html"><i class="bi bi-upc-scan me-1"></i> Scanner Mobile</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                    <span class="text-success small d-none d-md-block fw-bold"><i class="bi bi-broadcast me-1"></i> Real-time Active</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 pb-5">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header-custom"><div class="icon-circle"><i class="bi bi-file-earmark-excel"></i></div>Upload Massal Excel</div>
+                    <div class="card-body">
+                        <form id="uploadForm">
+                            <label for="excelFile" class="visually-hidden">Pilih File Excel</label>
+                            <input type="file" id="excelFile" class="form-control mb-3" accept=".xlsx, .xls" required title="Pilih File Excel untuk diupload" aria-label="Upload File Excel">
+                            <button type="submit" class="btn btn-pln w-100"><i class="bi bi-cloud-arrow-up me-2"></i>Upload & Proses</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="card h-100">
+                    <div class="card-header-custom"><div class="icon-circle"><i class="bi bi-box-seam"></i></div>Input Manual Chemical</div>
+                    <div class="card-body">
+                        <form id="manualForm" class="row g-3">
+                            <div class="col-md-2">
+                                <label for="miu" class="form-label">MIU</label>
+                                <input type="text" id="miu" class="form-control" placeholder="Contoh: 1" required>
+                            </div>
+                            <div class="col-md-7">
+                                <label for="uraian" class="form-label">URAIAN</label>
+                                <input type="text" id="uraian" class="form-control" placeholder="Nama Barang" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="jumlah" class="form-label">JUMLAH (Stok)</label>
+                                <input type="number" id="jumlah" class="form-control fw-bold text-primary" min="0" value="0" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="masa_pakai" class="form-label">MASA PAKAI</label>
+                                <input type="text" id="masa_pakai" class="form-control" placeholder="Contoh: 3 BULAN">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="periode" class="form-label">PERIODE</label>
+                                <input type="text" id="periode" class="form-control" placeholder="Juli-September 2024">
+                            </div>
+                            <div class="col-md-5">
+                                <label for="ket" class="form-label">KET (Keterangan)</label>
+                                <input type="text" id="ket" class="form-control" placeholder="...">
+                            </div>
+                            <div class="col-12 text-end mt-4">
+                                <button type="submit" class="btn btn-pln px-4"><i class="bi bi-save me-2"></i>Simpan Barang</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL STOK UTAMA -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header-custom">Daftar Monitoring Chemical Terkini</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4 col-miu">MIU</th>
+                                        <th class="col-uraian">URAIAN</th>
+                                        <th class="text-center col-jumlah">JUMLAH</th>
+                                        <th class="col-masa">MASA PAKAI</th>
+                                        <th class="col-periode">PERIODE</th>
+                                        <th class="col-ket">KET</th>
+                                        <th class="text-center col-aksi">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Memuat data dari server...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL HISTORI -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header-custom bg-secondary text-white d-flex align-items-center">
+                        <i class="bi bi-clock-history me-2"></i> Histori Transaksi Barang
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">WAKTU TRANSAKSI</th>
+                                        <th>MIU</th>
+                                        <th>URAIAN BARANG</th>
+                                        <th class="text-center">JENIS</th>
+                                        <th class="text-center">JUMLAH</th>
+                                        <th>REFERENSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr><td colspan="6" class="text-center text-muted py-4">Memuat histori...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

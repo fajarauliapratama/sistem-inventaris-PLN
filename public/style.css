@@ -1,0 +1,180 @@
+/* ==========================================
+   TEMA KHUSUS PLN (CUSTOM CSS)
+   ========================================== */
+:root {
+    --pln-blue: #00A2E9;
+    --pln-blue-hover: #0089c7;
+    --pln-yellow: #FDBA12;
+    --bg-body: #f4f7f9;
+    --text-main: #334155;
+    --text-muted: #64748b;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+}
+
+/* Navbar Styling */
+.navbar-pln {
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-top: 4px solid var(--pln-blue);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: var(--pln-blue) !important;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+}
+
+/* Pengganti inline style untuk Icon Logo */
+.logo-icon {
+    font-size: 1.6rem;
+    color: var(--pln-yellow) !important;
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.card-header-custom {
+    background-color: transparent;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1.5rem 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--pln-blue);
+    box-shadow: 0 0 0 0.25rem rgba(0, 162, 233, 0.15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+/* Buttons */
+.btn-pln {
+    background-color: var(--pln-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: 0.2s;
+}
+.btn-pln:hover {
+    background-color: var(--pln-blue-hover);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-outline-pln {
+    border: 1px solid var(--pln-blue);
+    color: var(--pln-blue);
+    border-radius: 8px;
+    font-weight: 500;
+}
+.btn-outline-pln:hover {
+    background-color: var(--pln-blue);
+    color: white;
+}
+
+/* Table Styling */
+.table-custom th {
+    background-color: #f8fafc;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem;
+}
+.table-custom td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.table-custom tbody tr:hover {
+    background-color: #fbfcfd;
+}
+
+.badge-sku {
+    background-color: #e2e8f0;
+    color: #475569;
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+    border-radius: 6px;
+}
+
+.stock-highlight {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--pln-blue);
+}
+
+/* Pengganti inline style untuk Lebar Kolom Tabel */
+.col-sku { width: 20%; }
+.col-desc { width: 40%; }
+.col-stock { width: 20%; }
+.col-unit { width: 20%; }
+
+/* Utilities */
+.icon-circle {
+    background-color: rgba(0, 162, 233, 0.1);
+    color: var(--pln-blue);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* Pengganti inline-styles untuk lebar tabel dan spasi */
+.col-miu { width: 10%; }
+.col-uraian { width: 25%; }
+.col-jumlah { width: 10%; }
+.col-masa { width: 15%; }
+.col-periode { width: 15%; }
+.col-ket { width: 15%; }
+.col-aksi { width: 10%; }
+.spacer-40 { width: 40px; }
+
+/* Ukuran logo PLN di Navbar */
+.navbar-logo {
+    height: 35px; /* Anda bisa mengubah angka ini jika logo terlihat terlalu besar/kecil */
+    width: auto;
+    object-fit: contain;
+}

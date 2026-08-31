@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Barang Keluar - PLN</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        body { background-color: #ffffff; }
+        #reader { width: 100%; border-radius: 12px; overflow: hidden; border: none; }
+        #reader video { object-fit: cover; border-radius: 12px; }
+        
+        .mobile-header {
+            background-color: var(--pln-blue);
+            color: white;
+            padding: 1rem;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 162, 233, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .scanner-container { padding: 1.5rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <a href="index.html" class="text-white text-decoration-none p-2" aria-label="Kembali ke Dashboard" title="Kembali">
+            <i class="bi bi-arrow-left fs-4"></i>
+        </a>
+        
+        <div class="text-center flex-grow-1 fw-bold">
+            <i class="bi bi-upc-scan me-2 text-warning fs-5"></i>Scan Barang Keluar
+        </div>
+        
+        <div class="spacer-40"></div>
+    </div>
+
+    <div class="scanner-container">
+        <!-- Kotak Kamera Scanner -->
+        <div id="reader" class="shadow-sm mb-4"></div>
+
+        <!-- Formulir Input Transaksi -->
+        <div id="resultCard" class="card shadow-sm d-none">
+            <div class="card-body">
+                <h6 class="text-muted small mb-1">Barcode Terbaca:</h6>
+                <h4 id="scannedSku" class="fw-bold text-primary mb-3">PLN-XXX</h4>
+                
+                <form id="outboundForm">
+                    <div class="mb-3">
+                        <label for="refNumber" class="form-label small fw-bold">Nomor Referensi (Surat Tugas)</label>
+                        <input type="text" id="refNumber" class="form-control" placeholder="Contoh: ST-2026-07" required title="Masukkan Nomor Referensi Surat Tugas">
+                    </div>
+                    <div class="mb-3">
+                        <label for="qty" class="form-label small fw-bold">Jumlah Diambil</label>
+                        <input type="number" id="qty" class="form-control text-center fs-5 fw-bold" min="1" value="1" required title="Masukkan Jumlah Barang yang Diambil">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm text-dark">
+                        <i class="bi bi-box-arrow-up-right me-2"></i> Konfirmasi Barang Keluar
+                    </button>
+                    
+                    <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="resetScanner()">
+                        Batal & Scan Ulang
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let html5QrCode;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            html5QrCode = new Html5Qrcode("reader");
+            startScanner();
+        });
+
+        // Memulai Kamera Belakang Secara Paksa
+        function startScanner() {
+            document.getElementById('reader').classList.remove('d-none');
+            document.getElementById('resultCard').classList.add('d-none');
+
+            // 'environment' adalah parameter wajib untuk langsung menargetkan kamera belakang
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 },
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                alert("Kamera belakang tidak dapat diakses atau izin belum diberikan oleh peramban.");
+                console.error(err);
+            });
+        }
+
+        // Ketika Barcode Berhasil Terbaca
+        function onScanSuccess(decodedText, decodedResult) {
+            // Matikan kamera sebentar agar baterai HP tidak boros saat mengisi form
+            html5QrCode.stop().then(() => {
+                document.getElementById('reader').classList.add('d-none');
+                document.getElementById('resultCard').classList.remove('d-none');
+                document.getElementById('scannedSku').innerText = decodedText;
+            }).catch(err => console.error(err));
+        }
+
+        function onScanFailure(error) { 
+            // Dibiarkan kosong agar tidak memunculkan log error terus-menerus
+        }
+
+        // Fungsi Tombol Batal
+        function resetScanner() {
+            document.getElementById('outboundForm').reset();
+            startScanner();
+        }
+
+        // Eksekusi Simpan Data ke Server
+        document.getElementById('outboundForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                sku_barcode: document.getElementById('scannedSku').innerText,
+                quantity_taken: parseInt(document.getElementById('qty').value),
+                reference_number: document.getElementById('refNumber').value
+            };
+
+            const btn = document.querySelector('button[type="submit"]');
+            btn.innerHTML = 'Memproses...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/transactions/outbound`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('✅ Transaksi berhasil dicatat!');
+                    resetScanner(); 
+                } else {
+                    alert(`❌ Gagal: ${result.error}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan koneksi ke server.');
+            } finally {
+                btn.innerHTML = '<i class="bi bi-box-arrow-up-right me-2"></i> Konfirmasi Barang Keluar';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
