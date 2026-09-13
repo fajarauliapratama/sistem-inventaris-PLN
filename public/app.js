@@ -158,7 +158,13 @@ async function hapusBarang(sku) {
 
 // 6. FUNGSI CETAK QR CODE
 function cetakQR(sku, namaBarang) {
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${sku}`;
+    // Mengambil alamat web saat ini (misal: localhost:3000 atau alamat online Anda)
+    const baseUrl = window.location.origin; 
+    // Membuat tautan khusus yang langsung mengarah ke halaman scanner beserta data SKU
+    const linkScanner = `${baseUrl}/scanner.html?sku=${sku}`;
+    
+    // Encode URL agar aman dibaca oleh pembuat QR
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(linkScanner)}`;
     const printWindow = window.open('', '_blank', 'width=400,height=500');
     
     printWindow.document.write(`

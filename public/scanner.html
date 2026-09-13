@@ -13,12 +13,12 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
-        body { background-color: #ffffff; }
+        body { background-color: #f8f9fa; }
         #reader { width: 100%; border-radius: 12px; overflow: hidden; border: none; }
         #reader video { object-fit: cover; border-radius: 12px; }
         
         .mobile-header {
-            background-color: var(--pln-blue);
+            background-color: var(--pln-blue, #00A2E9);
             color: white;
             padding: 1rem;
             border-bottom-left-radius: 20px;
@@ -29,7 +29,8 @@
             justify-content: space-between;
         }
         
-        .scanner-container { padding: 1.5rem; margin-top: 10px; }
+        .scanner-container { padding: 1.5rem; margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .spacer-40 { width: 40px; }
     </style>
 </head>
 <body>
@@ -48,7 +49,7 @@
 
     <div class="scanner-container">
         <!-- Kotak Kamera Scanner -->
-        <div id="reader" class="shadow-sm mb-4"></div>
+        <div id="reader" class="shadow-sm mb-4 bg-white"></div>
 
         <!-- Formulir Input Transaksi -->
         <div id="resultCard" class="card shadow-sm d-none">
@@ -66,11 +67,11 @@
                         <input type="number" id="qty" class="form-control text-center fs-5 fw-bold" min="1" value="1" required title="Masukkan Jumlah Barang yang Diambil">
                     </div>
                     
-                    <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm text-dark">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm text-dark mb-2">
                         <i class="bi bi-box-arrow-up-right me-2"></i> Konfirmasi Barang Keluar
                     </button>
                     
-                    <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="resetScanner()">
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="resetScanner()">
                         Batal & Scan Ulang
                     </button>
                 </form>
@@ -80,51 +81,86 @@
 
     <script>
         const API_URL = '/api';
-        let html5QrCode;
+        let html5QrCode = null;
 
         document.addEventListener("DOMContentLoaded", () => {
-            html5QrCode = new Html5Qrcode("reader");
-            startScanner();
+            // Cek apakah ada parameter SKU dari URL (hasil scan kamera bawaan HP)
+            const urlParams = new URLSearchParams(window.location.search);
+            const skuParam = urlParams.get('sku');
+
+            if (skuParam) {
+                // Langsung tampilkan form pengeluaran barang tanpa menyalakan kamera
+                document.getElementById('reader').classList.add('d-none');
+                document.getElementById('resultCard').classList.remove('d-none');
+                document.getElementById('scannedSku').innerText = skuParam;
+            } else {
+                // Buka kamera scanner bawaan aplikasi
+                html5QrCode = new Html5Qrcode("reader");
+                startScanner();
+            }
         });
 
-        // Memulai Kamera Belakang Secara Paksa
+        // Memulai Kamera Belakang Secara Otomatis
         function startScanner() {
             document.getElementById('reader').classList.remove('d-none');
             document.getElementById('resultCard').classList.add('d-none');
 
-            // 'environment' adalah parameter wajib untuk langsung menargetkan kamera belakang
             html5QrCode.start(
                 { facingMode: "environment" }, 
                 { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 },
                 onScanSuccess,
                 onScanFailure
             ).catch(err => {
-                alert("Kamera belakang tidak dapat diakses atau izin belum diberikan oleh peramban.");
+                alert("Izin kamera ditolak atau kamera belakang tidak terdeteksi.");
                 console.error(err);
             });
         }
 
-        // Ketika Barcode Berhasil Terbaca
+        // Penanganan Saat Barcode Berhasil Terdeteksi
         function onScanSuccess(decodedText, decodedResult) {
-            // Matikan kamera sebentar agar baterai HP tidak boros saat mengisi form
-            html5QrCode.stop().then(() => {
+            let sku = decodedText;
+
+            // Jika barcode berisi URL lengkap, ambil nilai parameter 'sku'
+            try {
+                if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
+                    const parsedUrl = new URL(decodedText);
+                    const urlSku = parsedUrl.searchParams.get('sku');
+                    if (urlSku) sku = urlSku;
+                }
+            } catch (e) {
+                sku = decodedText;
+            }
+
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader').classList.add('d-none');
+                    document.getElementById('resultCard').classList.remove('d-none');
+                    document.getElementById('scannedSku').innerText = sku;
+                }).catch(err => console.error(err));
+            } else {
                 document.getElementById('reader').classList.add('d-none');
                 document.getElementById('resultCard').classList.remove('d-none');
-                document.getElementById('scannedSku').innerText = decodedText;
-            }).catch(err => console.error(err));
+                document.getElementById('scannedSku').innerText = sku;
+            }
         }
 
-        function onScanFailure(error) { 
-            // Dibiarkan kosong agar tidak memunculkan log error terus-menerus
+        function onScanFailure(error) {
+            // Callback pencarian frame dibiarkan kosong agar performa tetap ringan
         }
 
-        // Fungsi Tombol Batal
+        // Reset Formulir dan Pemindai
         function resetScanner() {
-            document.getElementById('outboundForm').reset();
-            startScanner();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('sku')) {
+                // Jika dibuka via tautan kamera bawaan, kembali ke dashboard
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('outboundForm').reset();
+                startScanner();
+            }
         }
 
-        // Eksekusi Simpan Data ke Server
+        // Kirim Data Transaksi ke Backend
         document.getElementById('outboundForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -134,7 +170,7 @@
                 reference_number: document.getElementById('refNumber').value
             };
 
-            const btn = document.querySelector('button[type="submit"]');
+            const btn = document.querySelector('#outboundForm button[type="submit"]');
             btn.innerHTML = 'Memproses...';
             btn.disabled = true;
 
@@ -147,13 +183,19 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert('✅ Transaksi berhasil dicatat!');
-                    resetScanner(); 
+                    alert('✅ Transaksi pengeluaran barang berhasil dicatat!');
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.has('sku')) {
+                        window.location.href = 'index.html';
+                    } else {
+                        resetScanner();
+                    }
                 } else {
                     alert(`❌ Gagal: ${result.error}`);
                 }
             } catch (error) {
-                alert('Terjadi kesalahan koneksi ke server.');
+                alert('Terjadi kendala koneksi ke server backend.');
             } finally {
                 btn.innerHTML = '<i class="bi bi-box-arrow-up-right me-2"></i> Konfirmasi Barang Keluar';
                 btn.disabled = false;
